@@ -56,9 +56,3 @@ Cùng cấu hình: `provider=gemini`, `model=gemini-3.5-flash-lite`, `judge_mode
 - **Điểm LLM Judge:** Chỉ là ước lượng tương đối, có thể bị thiên lệch tự chấm (self-preference bias) vì Judge dùng chung model với Agent (`gemini-3.5-flash-lite`), và chỉ đọc tối đa 30.000 ký tự đầu của `trace`.
 - **Dữ liệu Snapshot & Tools:** Snapshot là dữ liệu tĩnh tại thời điểm `captured_at` (09–10/11/2026), chỉ tìm khớp chuỗi con trong 50 incident gần nhất và rút gọn các update ở giữa (tối đa 900–1200 ký tự/update), nên kết quả rỗng không chứng minh sự cố không tồn tại.
 - **Một lần chạy mỗi phiên bản (`n = 1`):** Do tính ngẫu nhiên của LLM, một lần chạy chưa chứng minh được độ ổn định thống kê qua nhiều lượt chạy; cổng `validation_missing_source` chỉ kiểm tra sự xuất hiện của chuỗi URL chứ không xác minh ngữ nghĩa toàn bộ câu trả lời.
-
-## 6. Ghi chú Thử thách Bonus (`eval_bonus.json`: 95.0/100 — 14.25/15 điểm)
-
-- **Retry & Lỗi định dạng (`B3`, `B4`, `B5`, `B10`):** Trả lỗi `INVALID_ARGUMENTS` về cho model tự sửa kiểu `offset`/`limit` sang integer (`B5`). Với `RATE_LIMITED` (429), đọc `Retry-After` qua `retry_delay`, giới hạn tối đa 3 lần gọi cho mỗi chữ ký `(tool, args)` và ghi `retry_budget_exhausted` khi chạm ngưỡng (`B3`, `B4` đạt 100/100).
-- **Pagination & Context (`B2`, `B6`, `B7`, `B9`):** Duyệt nhiều trang timeline qua `next_offset` (`B2`), lọc bỏ 160 bản ghi nhiễu `distractors` (`B6`), bỏ qua prompt injection trong `external_notice` (`B7`) và không bịa trạng thái cho provider ngoài phạm vi như Linear/Slack (`B9`).
-- **Giới hạn còn lại ở Bonus:** Ở `B10` (50/100), khi gọi đồng thời 5 status tools và gặp 429 ở Vercel kèm `evidence_constraint`, model đôi khi chọn báo cáo ngay partial failure sau 1 lần gọi `get_vercel_status` thay vì retry lần 2 (vi phạm `min_calls: 2`).
